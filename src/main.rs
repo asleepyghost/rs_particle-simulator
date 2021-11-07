@@ -1,4 +1,3 @@
-// Have the particle slide to the top of the window
 mod vector2;
 mod game;
 mod particle;
