@@ -1,39 +1,36 @@
 use rand::Rng;
 use crate::entity::Entity;
-use crate::vector2::Vector2D;
-use crate::physics::{Bounds};
+use crate::physics::{Bounds, Vector2D};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ParticleType {
-    BLUE,
-    RED,
-    GREEN,
-    ORANGE,
-    BROWN,
-    WHITE,
-    PURPLE,
-    PINK
+    BLUE = 0,
+    RED = 1,
+    GREEN = 2,
+    ORANGE = 3,
+    BROWN = 4,
+    WHITE = 5,
+    PURPLE = 6,
+    PINK = 7
 }
 
 pub struct Particle {
     bounds: Bounds,
     velocity: Vector2D,
     pub particle_type: ParticleType,
+    id: usize,
 }
 
 impl Particle {
-    pub fn new(position : Vector2D, width : f64, height : f64, particle_type: ParticleType) -> Self {
+    pub fn new(position : Vector2D, width : f64, height : f64, particle_type: ParticleType, id: usize) -> Self {
         let bounds = Bounds::new(position, (width, height));
 
         Self {
             bounds,
             particle_type,
-            velocity: get_initial_velocity()
+            velocity: get_initial_velocity(),
+            id,
         }
-    }
-
-    pub fn set_velocity(&mut self, velocity: Vector2D) {
-        self.velocity = velocity;
     }
 
     pub fn handle_movement(&mut self) {
@@ -61,11 +58,6 @@ impl Particle {
             self.velocity.set_y(self.velocity.y() * -1.0);
         }
     }
-
-    pub fn reverse_velocity(&mut self) {
-        self.velocity.set_x(self.velocity.x() * -1.0);
-        self.velocity.set_y(self.velocity.y() * -1.0);
-    }
 }
 
 impl Entity for Particle {
@@ -89,6 +81,22 @@ impl Entity for Particle {
     fn tick(&mut self) {
         self.handle_movement();
         self.handle_wall_collision();
+    }
+
+    fn get_id(&self) -> usize {
+        self.id
+    }
+
+    fn get_velocity(&self) -> &Vector2D {
+        &self.velocity
+    }
+
+    fn set_velocity(&mut self, velocity: Vector2D) {
+        self.velocity = velocity;
+    }
+
+    fn as_particle(&self) -> &Particle {
+        &self
     }
 }
 
@@ -114,7 +122,9 @@ pub fn get_initial_velocity() -> Vector2D {
     let reverse_x = rng.gen::<f64>() > 0.5;
     let reverse_y = rng.gen::<f64>() > 0.5;
 
-    let mut initial_velocity = Vector2D::new(rng.gen::<f64>(), rng.gen::<f64>());
+    let multiplier = rng.gen::<f64>() * 5.0;
+
+    let mut initial_velocity = Vector2D::new(rng.gen::<f64>() * multiplier, rng.gen::<f64>() * multiplier);
 
     if reverse_x {
         initial_velocity.set_x(initial_velocity.x() * -1.0);
